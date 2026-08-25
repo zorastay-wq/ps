@@ -1,0 +1,150 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Health / Connection test probe path
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Common Security Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. User Profile Security Validations
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+             (!('dob' in data) || (data.dob is string && data.dob.size() <= 20)) &&
+             (!('tob' in data) || (data.tob is string && data.tob.size() <= 10)) &&
+             (!('pob' in data) || (data.pob is string && data.pob.size() <= 120)) &&
+             (!('gender' in data) || (data.gender in ['male', 'female', 'other'])) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 25)) &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 150)) &&
+             (!('gotra' in data) || (data.gotra is string && data.gotra.size() <= 80)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 40));
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isOwner(userId) && 
+                       isValidId(userId) && 
+                       incoming().userId == request.auth.uid && 
+                       isValidUserProfile(incoming());
+
+      allow update: if isOwner(userId) && 
+                       isValidId(userId) && 
+                       incoming().userId == existing().userId && 
+                       isValidUserProfile(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'fullName', 'dob', 'tob', 'pob', 'gender', 'phone', 'email', 'gotra', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    // 2. Consultation Booking Appointments
+    function isValidBooking(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.serviceId is string && data.serviceId.size() > 0 && data.serviceId.size() <= 50 &&
+             data.clientName is string && data.clientName.size() > 0 && data.clientName.size() <= 100 &&
+             data.clientPhone is string && data.clientPhone.size() > 0 && data.clientPhone.size() <= 25 &&
+             data.preferredDate is string && data.preferredDate.size() > 0 && data.preferredDate.size() <= 25 &&
+             data.status in ['pending', 'confirmed', 'completed', 'cancelled'] &&
+             (!('serviceTitle' in data) || (data.serviceTitle is string && data.serviceTitle.size() <= 120)) &&
+             (!('consultationType' in data) || (data.consultationType is string && data.consultationType.size() <= 50)) &&
+             (!('preferredSlot' in data) || (data.preferredSlot is string && data.preferredSlot.size() <= 30)) &&
+             (!('clientEmail' in data) || (data.clientEmail is string && data.clientEmail.size() <= 150)) &&
+             (!('birthDetails' in data) || (data.birthDetails is string && data.birthDetails.size() <= 250)) &&
+             (!('clientNotes' in data) || (data.clientNotes is string && data.clientNotes.size() <= 1000)) &&
+             (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 40));
+    }
+
+    match /bookings/{bookingId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.clientEmail == request.auth.token.email);
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() && 
+                       isValidId(bookingId) && 
+                       incoming().userId == request.auth.uid && 
+                       isValidBooking(incoming());
+
+      allow update: if isSignedIn() && 
+                       isValidId(bookingId) && 
+                       resource.data.userId == request.auth.uid && 
+                       incoming().userId == existing().userId && 
+                       isValidBooking(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'preferredDate', 'preferredSlot', 'consultationType', 'clientNotes', 'status'
+                       ]);
+
+      allow delete: if isSignedIn() && isValidId(bookingId) && resource.data.userId == request.auth.uid;
+    }
+
+    // 3. Palm Scan Biometric History
+    function isValidPalmScan(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.handPreference in ['right', 'left'] &&
+             data.vitalityScore is number && data.vitalityScore >= 0 && data.vitalityScore <= 100 &&
+             (!('lifeLineTrajectory' in data) || (data.lifeLineTrajectory is string && data.lifeLineTrajectory.size() <= 500)) &&
+             (!('heartLineTrajectory' in data) || (data.heartLineTrajectory is string && data.heartLineTrajectory.size() <= 500)) &&
+             (!('headLineTrajectory' in data) || (data.headLineTrajectory is string && data.headLineTrajectory.size() <= 500)) &&
+             (!('fateLineTrajectory' in data) || (data.fateLineTrajectory is string && data.fateLineTrajectory.size() <= 500)) &&
+             (!('mountsSummary' in data) || (data.mountsSummary is string && data.mountsSummary.size() <= 500)) &&
+             (!('lalKitabUpays' in data) || (data.lalKitabUpays is string && data.lalKitabUpays.size() <= 800)) &&
+             (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 40));
+    }
+
+    match /palm_scans/{scanId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() && 
+                       isValidId(scanId) && 
+                       incoming().userId == request.auth.uid && 
+                       isValidPalmScan(incoming());
+
+      allow delete: if isSignedIn() && isValidId(scanId) && resource.data.userId == request.auth.uid;
+    }
+
+    // 4. Newsletter Subscribers
+    function isValidNewsletterSubscriber(data) {
+      return data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
+             data.active is bool &&
+             (!('zodiacSign' in data) || (data.zodiacSign is string && data.zodiacSign.size() <= 30)) &&
+             (!('subscribedAt' in data) || (data.subscribedAt is string && data.subscribedAt.size() <= 40));
+    }
+
+    match /newsletter_subscribers/{subscriberId} {
+      allow get, list: if false; // Private to administrators
+      allow create: if isValidId(subscriberId) && isValidNewsletterSubscriber(incoming());
+      allow update: if isSignedIn() && isValidId(subscriberId) && 
+                       isValidNewsletterSubscriber(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['active', 'zodiacSign']);
+    }
+  }
+}

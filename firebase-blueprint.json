@@ -1,0 +1,233 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with Vedic birth details and astrological preferences",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Authentication UID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the native",
+          "maxLength": 100
+        },
+        "dob": {
+          "type": "string",
+          "description": "Date of birth in YYYY-MM-DD format",
+          "maxLength": 20
+        },
+        "tob": {
+          "type": "string",
+          "description": "Time of birth in HH:MM format",
+          "maxLength": 10
+        },
+        "pob": {
+          "type": "string",
+          "description": "Place of birth (City, State, Country)",
+          "maxLength": 120
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender of the native",
+          "enum": ["male", "female", "other"]
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone or WhatsApp number",
+          "maxLength": 25
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 150
+        },
+        "gotra": {
+          "type": "string",
+          "description": "Ancestral Gotra or spiritual lineage",
+          "maxLength": 80
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": ["userId", "fullName"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Vedic Astrology or Vastu consultation appointment booking",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID of the client booking the session",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Identifier of the chosen service (e.g., lal-kitab, vastu, palmistry)",
+          "maxLength": 50
+        },
+        "serviceTitle": {
+          "type": "string",
+          "description": "Display title of the service",
+          "maxLength": 120
+        },
+        "consultationType": {
+          "type": "string",
+          "description": "Mode of consultation (Online Video, Voice, In-Person Delhi)",
+          "maxLength": 50
+        },
+        "preferredDate": {
+          "type": "string",
+          "description": "Preferred appointment date",
+          "maxLength": 25
+        },
+        "preferredSlot": {
+          "type": "string",
+          "description": "Preferred time window",
+          "maxLength": 30
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Client full name",
+          "maxLength": 100
+        },
+        "clientPhone": {
+          "type": "string",
+          "description": "Client phone number",
+          "maxLength": 25
+        },
+        "clientEmail": {
+          "type": "string",
+          "description": "Client email address",
+          "maxLength": 150
+        },
+        "birthDetails": {
+          "type": "string",
+          "description": "DOB, TOB, and POB notes",
+          "maxLength": 250
+        },
+        "clientNotes": {
+          "type": "string",
+          "description": "Specific questions or concerns for Dr. Preeti Sehgal",
+          "maxLength": 1000
+        },
+        "status": {
+          "type": "string",
+          "description": "Booking status",
+          "enum": ["pending", "confirmed", "completed", "cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["userId", "serviceId", "clientName", "clientPhone", "preferredDate", "status"]
+    },
+    "PalmScan": {
+      "title": "PalmScan",
+      "description": "Saved Hasta Rekha biometric scan reading and planetary insights",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID of the palm owner",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "handPreference": {
+          "type": "string",
+          "description": "Dominant or passive hand",
+          "enum": ["right", "left"]
+        },
+        "vitalityScore": {
+          "type": "number",
+          "description": "Life line vitality score (0-100)"
+        },
+        "lifeLineTrajectory": {
+          "type": "string",
+          "description": "Jeevan Rekha insight",
+          "maxLength": 500
+        },
+        "heartLineTrajectory": {
+          "type": "string",
+          "description": "Hridaya Rekha insight",
+          "maxLength": 500
+        },
+        "headLineTrajectory": {
+          "type": "string",
+          "description": "Mastishka Rekha insight",
+          "maxLength": 500
+        },
+        "fateLineTrajectory": {
+          "type": "string",
+          "description": "Bhagya Rekha insight",
+          "maxLength": 500
+        },
+        "mountsSummary": {
+          "type": "string",
+          "description": "Dominant mounts summary",
+          "maxLength": 500
+        },
+        "lalKitabUpays": {
+          "type": "string",
+          "description": "Prescribed Lal Kitab remedies summary",
+          "maxLength": 800
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Scan timestamp"
+        }
+      },
+      "required": ["userId", "handPreference", "vitalityScore"]
+    },
+    "NewsletterSubscriber": {
+      "title": "NewsletterSubscriber",
+      "description": "Cosmic Transit Newsletter subscriber",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Subscriber email address",
+          "maxLength": 150
+        },
+        "zodiacSign": {
+          "type": "string",
+          "description": "Native Moon / Sun sign for tailored transits",
+          "maxLength": 30
+        },
+        "subscribedAt": {
+          "type": "string",
+          "description": "Timestamp of subscription"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Subscription status"
+        }
+      },
+      "required": ["email", "active"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Individual user profiles containing birth information and contact details"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Consultation appointments booked by clients"
+    },
+    "/palm_scans/{scanId}": {
+      "schema": "PalmScan",
+      "description": "Saved Hasta Rekha biometric palm scan readings"
+    },
+    "/newsletter_subscribers/{subscriberId}": {
+      "schema": "NewsletterSubscriber",
+      "description": "Subscribers for daily cosmic transit alerts and Vedic insights"
+    }
+  }
+}

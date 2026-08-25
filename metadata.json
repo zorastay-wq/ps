@@ -1,0 +1,10 @@
+{
+  "name": "Dr. Preeti Sehgal - Vedic Astrologer \u0026 Vastu Consultant",
+  "description": "Official platform for Dr. Preeti Sehgal — 17+ Years Experienced Vedic Astrologer, Lal Kitab Specialist, Tarot Master, Numerologist, and Vastu Shastra Consultant in Delhi.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
